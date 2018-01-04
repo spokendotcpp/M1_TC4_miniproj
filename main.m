@@ -43,7 +43,9 @@ end
 % 1)
 % Mélange des Images 
 % Liste des index d'images mélangés
-shuffle = randperm(nb_img)
+shuffle = randperm(nb_img);
+
+% Permutation et recopies des images dans une nouvelle liste :
 img_shuffle = ones(img_h, img_w, nb_img);
 for i = 1:nb_img
     img_shuffle(:,:,i) = img_list(:,:, shuffle(i));
