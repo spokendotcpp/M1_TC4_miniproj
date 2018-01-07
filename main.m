@@ -7,7 +7,9 @@
 % Janvier 2018
 
 % Suppression de toutes les variables en mémoires
-%clear all
+clear all
+% Fermeture de toutes les fenêtres
+close all
 
 % Sélection d'une certaine séquence d'images :
 prefix = 'motion';
@@ -36,14 +38,15 @@ nb_img = length(dir_list);
 % Initialisation :
 img_list = ones(img_h, img_w, nb_img);
 
+% Lecture des images listées dans le répertoire :
 for i = 1:nb_img
    img_list(:,:,i) = imread(['sequences/' dir_list(i).name]);
 end
 
 % 1)
 % Mélange des Images 
-% Liste des index d'images mélangés
-shuffle = randperm(nb_img);
+% Pour ce faire : mélange des index des images
+shuffle = randperm(nb_img)
 
 % Permutation et recopies des images dans une nouvelle liste :
 img_shuffle = ones(img_h, img_w, nb_img);
@@ -51,22 +54,31 @@ for i = 1:nb_img
     img_shuffle(:,:,i) = img_list(:,:, shuffle(i));
 end
 
-%shuffle2 = randperm(nb_img);
+% -------------- Jusqu'ici, tout est bon
+% TEST & AFFICHAGES
+%
+% openCV comparaison de deux histogrammes
+% https://docs.opencv.org/2.4/modules/imgproc/doc/histograms.html?highlight=comparehist#comparehist
 
-% img_list = img_list(:,:,shuffle);
-% img_list = img_list(:,:,shuffle2);
-% 
-% % "Vectorisation" des images
-% imVec = ones(img_h*img_w, nb_img);
-% 
-% for i = 1 : length(listeImages)
-%    a = img_list(:,:,i);
-%    imVec(:,i) = a(:);
-% end
-% 
-% % Calcul de la covariance
-% covMat = cov(imVec);
-% [V , D] = eig(covMat);
-% test = V' * imVec';
+figure;
+hold on;
+subplot(2,2,[1:2]);
+% Affiche les différences trouvées entre deux images (visuel)
+imshowpair( img_shuffle(:,:,1), img_shuffle(:,:,2), 'diff' );
 
+subplot(2,2,3);
+imshow( img_shuffle(:,:,1), []);
 
+subplot(2,2,4);
+imshow( img_shuffle(:,:,2), []);
+hold off;
+
+% Test de calcul d'une distance entre deux images
+img_A = img_list(:,:,1);
+img_B = img_list(:,:,2);
+
+hist_A = hist(img_A(:));
+hist_B = hist(img_B(:));
+
+D = pdist2( hist_A, hist_B )
+D = pdist2( hist_A, hist_A )
