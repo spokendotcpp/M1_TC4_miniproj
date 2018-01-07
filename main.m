@@ -74,11 +74,31 @@ imshow( img_shuffle(:,:,2), []);
 hold off;
 
 % Test de calcul d'une distance entre deux images
-img_A = img_list(:,:,1);
-img_B = img_list(:,:,2);
+% img_A = img_list(:,:,1);
+% img_B = img_list(:,:,2);
+% 
+% hist_A = hist(img_A(:));
+% hist_B = hist(img_B(:));
+% 
+% D = pdist2( hist_A, hist_B )
+% D = pdist2( hist_A, hist_A )
 
-hist_A = hist(img_A(:));
-hist_B = hist(img_B(:));
+% Test sur toutes les images
+r = zeros(nb_img, nb_img);
 
-D = pdist2( hist_A, hist_B )
-D = pdist2( hist_A, hist_A )
+for i=1:nb_img
+    
+    img_A = img_list(:,:,i);
+    hist_A = hist( img_A(:) );
+    
+    for j=i+1:nb_img
+        
+        img_B = img_list(:,:,j);
+        hist_B = hist( img_B(:) );
+        r(i,j) = pdist2( hist_A, hist_B );
+    end
+end
+
+r
+r(2,3)
+r(2,4)
