@@ -6,13 +6,16 @@
 %
 % Janvier 2018
 
+% URL
+% https://fr.mathworks.com/help/images/ref/normxcorr2.html
+
 % Suppression de toutes les variables en mémoires
 clear all
 % Fermeture de toutes les fenêtres
 close all
 
 % Sélection d'une certaine séquence d'images :
-prefix = '6.3';
+prefix = '6.2';
 dir_name = strcat('sequences/', prefix, '*.tiff');
 
 % Listing du répertoire dans lequel se trouve toutes nos images :
