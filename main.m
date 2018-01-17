@@ -36,7 +36,7 @@ nb_img = length(dir_list);
 % Cette matrice aura pour taille :
 % [hauteur de l'image][largeur de l'image][nombre d'images-1]
 % Initialisation :
-img_list = ones(img_h, img_w, nb_img-1);
+img_list = zeros(img_h, img_w, nb_img-1);
 
 % Lecture des images listées dans le répertoire :
 for i = 1:nb_img-1
@@ -58,75 +58,64 @@ end
 % "liste mélangée"
 img_shuffle(:,:,1) = img_default;
 
-% -------------- Jusqu'ici, tout est bon
-% TEST & AFFICHAGES
-%
-% openCV comparaison de deux histogrammes
-% https://docs.opencv.org/2.4/modules/imgproc/doc/histograms.html?highlight=comparehist#comparehist
+% Pour chaque image on va tester toutes les voisinnes restantes
+% non-classées.
+% La dernière image n'en aura donc pas (d'où le nb_img-1).
+for i=1:nb_img-1
+   closest_id = i+1;
+   NC2_max = 0;
+   
+   % On compare à chaque fois grâce à normxcorr2 la cross-correlation
+   % normalisée entre l'image i fixe et une de ses voisinnes j.
+   for j=i+1:nb_img
+      NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,j) );
+      NC2_current_max = max(NC2(:));
+      
+      % On récupère ensuite le maximum dans ces matrices.
+      % Plus le max est grand (1 = égalité), plus l'image j est proche 
+      % de l'image i.
+      if NC2_max < NC2_current_max
+         NC2_max = NC2_current_max;
+         closest_id = j;
+      end
+   end
+   
+   % Si le plus proche voisin de i, n'est plus i+1, alors on effectue une
+   % permutation.
+   if closest_id ~= i+1
+       tmp = img_shuffle(:,:,i+1);
+       img_shuffle(:,:,i+1) = img_shuffle(:,:, closest_id);
+       img_shuffle(:,:, closest_id) = tmp;
+   end
+   
+   % Puis on recommence notre tri d'image en partant de i+1
+end
 
-% figure;
-% hold on;
-% subplot(2,2,[1:2]);
+% Comparaison des résultats :
+img_true_list = zeros(img_w, img_h, nb_img);
+img_true_list(:,:,1) = img_default;
+img_true_list(:,:,2:end) = img_list;
+
+true_r = zeros(nb_img);
+sorted_r = zeros(nb_img);
+
+for i=1:nb_img
+    for j=i+1:nb_img
+        NC2 = normxcorr2( img_true_list(:,:,i), img_true_list(:,:,j) );
+        true_r(i,j) = max( NC2(:) );
+        
+        NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,j) );
+        sorted_r(i,j) = max( NC2(:) ); 
+    end
+end
+
+norm( true_r - sorted_r )
+
 % % Affiche les différences trouvées entre deux images (visuel)
-% imshowpair( img_shuffle(:,:,1), img_shuffle(:,:,2), 'diff' );
-% 
-% subplot(2,2,3);
-% imshow( img_shuffle(:,:,1), []);
-% 
-% subplot(2,2,4);
-% imshow( img_shuffle(:,:,2), []);
-% hold off;
+figure
+subplot(1,2,1);
+imshowpair( img_true_list(:,:,1), img_true_list(:,:,5), 'diff');
+subplot(1,2,2);
+imshowpair( img_shuffle(:,:,1), img_shuffle(:,:,5), 'diff' );
 
-% Test de calcul d'une distance entre deux images
-% img_A = img_list(:,:,1);
-% img_B = img_list(:,:,2);
-% 
-% hist_A = hist(img_A(:));
-% hist_B = hist(img_B(:));
-% 
-% D = pdist2( hist_A, hist_B )
-% D = pdist2( hist_A, hist_A )
-
-% Test sur toutes les images
-
-% -- Nouvelle méthode -- %
-% https://fr.mathworks.com/help/images/ref/normxcorr2.html
-r = zeros(nb_img);
-r_ = zeros(nb_img);
-
-a = img_list(:,:,1);
-b = img_list(:,:,2);
-c = img_list(:,:,5);
-
-A = normxcorr2(a,b);
-B = normxcorr2(a,c);
-% 
-% for i=1:nb_img
-%     img_A = img_list(:,:,i);
-%     for j=i+1:nb_img
-%         img_B = img_list(:,:,j);
-%         D = normxcorr2(img_A, img_B);
-%         r_(i,j) = max( D(:) );
-%     end
-% end
-
-%Alors je sais pas trop par quelle magie mais ce truc à l'air de
-%fonctionner.. Cette fonction compare deux images et te dis à quelle
-%endroit elles sont le plus similaire (un truc comme ça) donc quand deux
-%images d'une séquences se suivent elles sont similaires sur plus de pixel
-%que lorsque qu'elles ne suivent pas donc on obtient des valeurs plus
-%grande.. ou un truc comme ça mais en tout cas ça fonction plus ou moins
-%pas mal..
-% for i=1:nb_img
-%     img_A = img_shuffle(:,:,i);
-%     for j=i+1:nb_img
-%         img_B = img_shuffle(:,:,j);
-%         D = normxcorr2(img_A,img_B);
-%         r(i,j) = max( D(:) );
-%     end
-% end
-
-%Maintenant il faut réussir à localiser les max pour chaque images testé on
-%prendra deux max (image avant et image après), mais après on en fait
-%quoi?? Ca ne nous dit pas comment les remettre dans l'ordre..
 display('fin')
