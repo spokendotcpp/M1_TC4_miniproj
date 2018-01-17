@@ -12,7 +12,7 @@ clear all
 close all
 
 % Sélection d'une certaine séquence d'images :
-prefix = 'motion';
+prefix = '6.3';
 dir_name = strcat('sequences/', prefix, '*.tiff');
 
 % Listing du répertoire dans lequel se trouve toutes nos images :
@@ -71,7 +71,8 @@ for i=1:nb_img-1
       NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,j) );
       NC2_current_max = max(NC2(:));
       
-      % On récupère ensuite le maximum dans ces matrices.
+      % On récupère ensuite le maximum dans cette matrice de
+      % cross-correlation normalisée.
       % Plus le max est grand (1 = égalité), plus l'image j est proche 
       % de l'image i.
       if NC2_max < NC2_current_max
