@@ -32,31 +32,27 @@ img_default = imread(['sequences/' dir_list(1).name]);
 nb_img = length(dir_list);
 
 % Récupération dans une matrice à 3 dimensions de toutes les images 
-% de notre séquence (sauf la première déjà lue).
+% de notre séquence.
 % Cette matrice aura pour taille :
-% [hauteur de l'image][largeur de l'image][nombre d'images-1]
+% [hauteur de l'image][largeur de l'image][nombre d'images]
 % Initialisation :
 img_list = ones(img_h, img_w, nb_img-1);
 
 % Lecture des images listées dans le répertoire :
-for i = 1:nb_img-1
-   img_list(:,:,i) = imread(['sequences/' dir_list(i+1).name]);
+for i = 2:nb_img
+   img_list(:,:,i) = imread(['sequences/' dir_list(i).name]);
 end
 
 % 1)
 % Mélange des Images 
 % Pour ce faire : mélange des index des images
-shuffle = randperm(nb_img-1);
+shuffle = randperm(nb_img);
 
 % Permutation et recopies des images dans une nouvelle liste :
 img_shuffle = ones(img_h, img_w, nb_img);
 for i = 2:nb_img
-    img_shuffle(:,:,i) = img_list(:,:, shuffle(i-1));
+    img_shuffle(:,:,i) = img_list(:,:, shuffle(i));
 end
-
-% On place la première image de notre séquence en première place dans notre
-% "liste mélangée"
-img_shuffle(:,:,1) = img_default;
 
 % -------------- Jusqu'ici, tout est bon
 % TEST & AFFICHAGES
@@ -100,15 +96,15 @@ c = img_list(:,:,5);
 
 A = normxcorr2(a,b);
 B = normxcorr2(a,c);
-% 
-% for i=1:nb_img
-%     img_A = img_list(:,:,i);
-%     for j=i+1:nb_img
-%         img_B = img_list(:,:,j);
-%         D = normxcorr2(img_A, img_B);
-%         r_(i,j) = max( D(:) );
-%     end
-% end
+
+for i=1:nb_img
+    img_A = img_list(:,:,i);
+    for j=i+1:nb_img
+        img_B = img_list(:,:,j);
+        D = normxcorr2(img_A, img_B);
+        r_(i,j) = max( D(:) );
+    end
+end
 
 %Alors je sais pas trop par quelle magie mais ce truc à l'air de
 %fonctionner.. Cette fonction compare deux images et te dis à quelle
@@ -117,14 +113,14 @@ B = normxcorr2(a,c);
 %que lorsque qu'elles ne suivent pas donc on obtient des valeurs plus
 %grande.. ou un truc comme ça mais en tout cas ça fonction plus ou moins
 %pas mal..
-% for i=1:nb_img
-%     img_A = img_shuffle(:,:,i);
-%     for j=i+1:nb_img
-%         img_B = img_shuffle(:,:,j);
-%         D = normxcorr2(img_A,img_B);
-%         r(i,j) = max( D(:) );
-%     end
-% end
+for i=1:nb_img
+    img_A = img_shuffle(:,:,i);
+    for j=i+1:nb_img
+        img_B = img_shuffle(:,:,j);
+        D = normxcorr2(img_A,img_B);
+        r(i,j) = max( D(:) );
+    end
+end
 
 %Maintenant il faut réussir à localiser les max pour chaque images testé on
 %prendra deux max (image avant et image après), mais après on en fait
