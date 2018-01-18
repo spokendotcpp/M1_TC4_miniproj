@@ -6,13 +6,16 @@
 %
 % Janvier 2018
 
+% URL
+% https://fr.mathworks.com/help/images/ref/normxcorr2.html
+
 % Suppression de toutes les variables en mémoires
 clear all
 % Fermeture de toutes les fenêtres
 close all
 
 % Sélection d'une certaine séquence d'images :
-prefix = 'motion';
+prefix = '6.3';
 dir_name = strcat('sequences/', prefix, '*.tiff');
 
 % Listing du répertoire dans lequel se trouve toutes nos images :
@@ -71,7 +74,8 @@ for i=1:nb_img-1
       NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,j) );
       NC2_current_max = max(NC2(:));
       
-      % On récupère ensuite le maximum dans ces matrices.
+      % On récupère ensuite le maximum dans cette matrice de
+      % cross-correlation normalisée.
       % Plus le max est grand (1 = égalité), plus l'image j est proche 
       % de l'image i.
       if NC2_max < NC2_current_max
@@ -91,30 +95,36 @@ for i=1:nb_img-1
    % Puis on recommence notre tri d'image en partant de i+1
 end
 
-% Comparaison des résultats :
+
+% Vérification des résultats :
+
+% Création des tableaux de résultats :
+true_r = zeros(nb_img-1, 1);
+sorted_r = zeros(nb_img-1, 1);
+
+% Création de la liste initiale, qui est elle dans l'ordre.
 img_true_list = zeros(img_w, img_h, nb_img);
 img_true_list(:,:,1) = img_default;
 img_true_list(:,:,2:end) = img_list;
 
-true_r = zeros(nb_img);
-sorted_r = zeros(nb_img);
-
-for i=1:nb_img
-    for j=i+1:nb_img
-        NC2 = normxcorr2( img_true_list(:,:,i), img_true_list(:,:,j) );
-        true_r(i,j) = max( NC2(:) );
-        
-        NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,j) );
-        sorted_r(i,j) = max( NC2(:) ); 
-    end
+% Pour les deux séquences (initiale et triée après mélange) :
+% Calcul de la matrice normale d
+for i=1:nb_img-1
+    NC2 = normxcorr2( img_true_list(:,:,i), img_true_list(:,:,i+1) );
+    true_r(i) = max( NC2(:) );
+    
+    NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,i+1) );
+    sorted_r(i) = max( NC2(:) );
 end
 
+display("Difference entre les deux séquences d'images :")
 norm( true_r - sorted_r )
 
 % % Affiche les différences trouvées entre deux images (visuel)
-figure
-subplot(2,1,
-imshowpair( img_true_list(:,:,1), img_true_list(:,:,2), 'diff');
-imshowpair( img_shuffle(:,:,1), img_shuffle(:,:,2), 'diff' );
+%figure
+%subplot(1,2,1);
+%imshowpair( img_true_list(:,:,1), img_true_list(:,:,5), 'diff');
+%subplot(1,2,2);
+%imshowpair( img_shuffle(:,:,1), img_shuffle(:,:,5), 'diff' );
 
 display('fin')

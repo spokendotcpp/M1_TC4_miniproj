@@ -15,7 +15,7 @@ clear all
 close all
 
 % Sélection d'une certaine séquence d'images :
-prefix = '6.2';
+prefix = '6.3';
 dir_name = strcat('sequences/', prefix, '*.tiff');
 
 % Listing du répertoire dans lequel se trouve toutes nos images :
@@ -95,31 +95,44 @@ for i=1:nb_img-1
    % Puis on recommence notre tri d'image en partant de i+1
 end
 
-% Comparaison des résultats :
+
+% Vérification des résultats :
+
+% Création des tableaux de résultats :
+true_r = zeros(nb_img-1, 1);
+sorted_r = zeros(nb_img-1, 1);
+
+% Création de la liste initiale, qui est elle dans l'ordre.
 img_true_list = zeros(img_w, img_h, nb_img);
 img_true_list(:,:,1) = img_default;
 img_true_list(:,:,2:end) = img_list;
 
-true_r = zeros(nb_img);
-sorted_r = zeros(nb_img);
-
-for i=1:nb_img
-    for j=i+1:nb_img
-        NC2 = normxcorr2( img_true_list(:,:,i), img_true_list(:,:,j) );
-        true_r(i,j) = max( NC2(:) );
-        
-        NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,j) );
-        sorted_r(i,j) = max( NC2(:) ); 
-    end
+% Pour les deux séquences (initiale et triée après mélange) :
+% Calcul de la matrice de cross-correlation normalisée entre l'image i et
+% i+1 de chaque séquence.
+% On stock dans les tableaux résultats le max de chacune de ces matrices
+% (mises sous forme vectoriel).
+% On aura donc des tableaux résultats de taille nombre d'image de la
+% séquence - 1. La dernière image n'ayant pas de voisine i+1.
+for i=1:nb_img-1
+    NC2 = normxcorr2( img_true_list(:,:,i), img_true_list(:,:,i+1) );
+    true_r(i) = max( NC2(:) );
+    
+    NC2 = normxcorr2( img_shuffle(:,:,i), img_shuffle(:,:,i+1) );
+    sorted_r(i) = max( NC2(:) );
 end
 
+% On calcul ensuite la norme de la différence entre les deux vecteurs
+% résultats. Ainsi, plus le résultat obtenu est proche de 0, plus le tri de
+% nos images mélangées est bon.
+display("Difference entre les deux séquences d'images :")
 norm( true_r - sorted_r )
 
 % % Affiche les différences trouvées entre deux images (visuel)
-figure
-subplot(1,2,1);
-imshowpair( img_true_list(:,:,1), img_true_list(:,:,5), 'diff');
-subplot(1,2,2);
-imshowpair( img_shuffle(:,:,1), img_shuffle(:,:,5), 'diff' );
+%figure
+%subplot(1,2,1);
+%imshowpair( img_true_list(:,:,1), img_true_list(:,:,5), 'diff');
+%subplot(1,2,2);
+%imshowpair( img_shuffle(:,:,1), img_shuffle(:,:,5), 'diff' );
 
 display('fin')
